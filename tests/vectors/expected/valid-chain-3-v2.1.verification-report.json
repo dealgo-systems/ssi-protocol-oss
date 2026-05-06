@@ -1,0 +1,34 @@
+{
+  "$schema": "../../schemas/verification-report.schema.json",
+  "report_id": "report-1778111176128-1qm4a294",
+  "timestamp": "2026-05-06T23:46:16.128Z",
+  "chain_id": "chain-rec_v2-1-test_000",
+  "verification_scope": {
+    "records_verified": 3,
+    "time_range": {
+      "earliest": "2026-05-06T12:00:00.000000Z",
+      "latest": "2026-05-06T12:00:02.000000Z"
+    }
+  },
+  "integrity_status": "VALID",
+  "compliance_details": {
+    "constitutional_guarantees": {
+      "rpx_records_present": true,
+      "fail_closed_verified": false,
+      "human_escalation_available": false,
+      "hash_chain_intact": true,
+      "context_captured": true
+    },
+    "compliance_level": "L1",
+    "notes": "L1 (Basic): RPX records present with context capture. Cannot verify fail-closed or escalation from static chain."
+  },
+  "tamper_evidence": [],
+  "chain_metadata": {
+    "genesis_hash": "2563453cd9ff21176a5d8d5db5b30c762d47e86b74a179eaf9207058d89c717f",
+    "current_head": "c77ac9d3874eb07cf9755973e48b1c2ab5b40247f24ce5e9f567e19509325a72",
+    "decision_types": [
+      "authorization.action"
+    ],
+    "agent_count": 1
+  }
+}

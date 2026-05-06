@@ -2,7 +2,7 @@
   "$schema": "http://json-schema.org/draft-07/schema#",
   "$id": "https://ssi-protocol.org/schemas/rpx-record.json",
   "title": "SSI RPX Record (Reflective Provenance Extension)",
-  "description": "Canonical schema for SSI decision audit records. Defines the normative format for tamper-evident decision provenance as specified in SPEC.md and AUDIT.md.",
+  "description": "Canonical schema for SSI decision audit records. Defines the normative format for tamper-evident decision provenance as specified in SPEC.md and AUDIT.md. v2.1 introduces explicit receipt versioning and additive forward-compatibility per docs/protocol/RECEIPT_EVOLUTION.md.",
   "type": "object",
   "required": [
     "record_id",
@@ -94,8 +94,35 @@
       "type": "object",
       "description": "Optional: Implementation-specific metadata. Not included in canonical hash computation.",
       "additionalProperties": true
+    },
+    "receipt_version": {
+      "type": "string",
+      "description": "Optional (introduced v2.1): explicit semantic version of the receipt schema this record was produced under. Absence means v1 (pre-v2.1) — verifiers MUST accept absence as v1 for back-compat. Newer-than-known versions MUST be parsed using the additive-only rule (unknown fields are ignored). See docs/protocol/RECEIPT_EVOLUTION.md.",
+      "pattern": "^[a-zA-Z0-9._-]+$",
+      "examples": ["2.1", "2.1.0"]
+    },
+    "signing_key_id": {
+      "type": "string",
+      "description": "Optional (introduced v2.1): producer-key fingerprint that signed this record's canonical bytes. Lookup is performed against the producer key rotation registry. See docs/protocol/RECEIPT_EVOLUTION.md.",
+      "pattern": "^[a-f0-9]{8,64}$",
+      "examples": ["a1b2c3d4e5f60718"]
+    },
+    "policy_snapshot_fingerprint": {
+      "type": "string",
+      "description": "Optional (introduced v2.1): SHA-256 hex of the canonical bytes of the frozen policy snapshot the decision was gated by. Allows offline verifiers to rehydrate the exact policy environment at decision time. See docs/protocol/RECEIPT_EVOLUTION.md.",
+      "pattern": "^[a-f0-9]{64}$",
+      "examples": ["3f5e1c2b1a0987654321fedcba0987654321fedcba0987654321fedcba012345"]
+    },
+    "payload_hash": {
+      "type": "string",
+      "description": "Optional (introduced v2.1): SHA-256 hex of the canonical decision payload bytes that were signed. Distinct from record_hash, which covers the receipt envelope as a whole.",
+      "pattern": "^[a-f0-9]{64}$"
+    },
+    "signature": {
+      "type": "string",
+      "description": "Optional (introduced v2.1): base64-encoded Ed25519 signature over the canonical decision payload, produced by the key referenced by signing_key_id."
     }
   },
-  "additionalProperties": false,
-  "$comment": "Canonical form for hash computation: alphabetical key order, no whitespace, UTF-8 encoding, exclude 'metadata' field. See AUDIT.md §3.2 for hash computation rules."
+  "additionalProperties": true,
+  "$comment": "v2.1 forward-compatibility: additionalProperties was changed from false to true to satisfy doctrine §14 rule 1 (additive-only, verifiers ignore unknown fields). Canonical-byte rule for record_hash (locked at v1): alphabetical key order, no whitespace, UTF-8 encoding, exclude 'record_hash' and 'metadata' fields. ALL other present fields — including v2.1+ optional fields and any forward-compatible unknown fields — ARE included in the hash. See AUDIT.md §3.2 and docs/protocol/RECEIPT_EVOLUTION.md."
 }
