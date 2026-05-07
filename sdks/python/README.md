@@ -142,6 +142,80 @@ python -m pytest tests/test_verifier_vectors.py -v
 
 Spec authority: [`schemas/rpx-record.schema.json`](../../schemas/rpx-record.schema.json) + [`docs/protocol/RECEIPT_EVOLUTION.md`](../../docs/protocol/RECEIPT_EVOLUTION.md).
 
+## ReceiptBundle adapter (`ssi_protocol.verify.bundle`)
+
+Path (ii) added a Python adapter for the **portal's** `ReceiptBundle` JSON format — the artifact emitted by `/api/audit/receipt/<id>`. The same JSON file can now be verified by the existing TypeScript reference verifier (`dealgo-portal/scripts/verify-receipt.mts`) and by this Python adapter, with **byte-identical** chain-hash and bundle-hash recomputation.
+
+This is the artifact-convergence layer: same continuity object, two sovereign verifiers, one truth.
+
+### Public surface
+
+```python
+from ssi_protocol.verify import (
+    verify_receipt_bundle,    # main entry — pass a bundle dict, get a VerificationReport
+    compute_bundle_hash,      # SHA-256 of canonical bundle (excluding bundle_hash itself)
+    compute_row_chain_hash,   # sha256( (previous_hash ?? "") + "\n" + canonical_bytes )
+    canonical_bundle_bytes,   # canonical JSON encoder (matches TS deeplySortKeys + JSON.stringify byte-for-byte)
+    deeply_sort_keys,         # deep recursive key-sort helper
+    BundleVerificationError,
+)
+
+import json
+
+with open("receipt.json", "r", encoding="utf-8") as fh:
+    bundle = json.load(fh)
+
+report = verify_receipt_bundle(bundle)
+print(report.integrity_status)        # VALID / INCOMPLETE / INVALID
+print(len(report.tamper_evidence))    # finding count
+```
+
+The adapter returns the same `VerificationReport` shape the RPX verifier produces, so consumers can handle both verifiers' output uniformly.
+
+### Run the synthetic-fixture test suite
+
+```bash
+cd sdks/python
+python -m pytest tests/test_receipt_bundle_adapter.py -v
+```
+
+### Run against a real portal export (acceptance bar item 2)
+
+The real-bundle integration test in `tests/test_real_export.py` validates the adapter against an actual `ReceiptBundle` exported from the portal. The bundle file itself is **not committed** to this repo (it contains real workspace IDs, decision IDs, and signed canonical bytes — forbidden by [`PUBLIC_PROTOCOL_CHECKLIST.md`](../../PUBLIC_PROTOCOL_CHECKLIST.md)). Provide one at runtime via the `BUNDLE_PATH` environment variable:
+
+```bash
+# 1. Export a real receipt from the portal:
+curl -L "https://your-portal-host/api/audit/receipt/<id>" -o receipt.json
+
+# 2. Run the integration test against it:
+cd sdks/python
+BUNDLE_PATH=$(pwd)/../../receipt.json python -m pytest tests/test_real_export.py -v
+```
+
+The test is **skipped** when `BUNDLE_PATH` is unset (which is always true in CI for this repo, by design). When provided, it asserts:
+
+1. The exported bundle parses as a JSON object.
+2. All required top-level fields are present.
+3. The decision row's stored `chain_hash` recomputes via the Python formula.
+4. Every operator action's stored `chain_hash` recomputes.
+5. The top-level `bundle_hash` recomputes — the **cross-runtime byte-identity** proof.
+6. End-to-end `verify_receipt_bundle()` returns `VALID` with zero findings.
+7. Unknown top-level fields don't break recomputation (forward-compat).
+
+Acceptance bar #2 is satisfied when a real export passes all seven assertions.
+
+### What this adapter does NOT do (Path (ii) scope, locked)
+
+- ❌ No CLI (`python -m ssi_protocol.verify --in <file>` is **not** wired)
+- ❌ No PyPI release / no `setup.py` change / no version bump
+- ❌ No portal-side change
+- ❌ No `verifier_attestations` injection into bundles
+- ❌ No simulated cross-runtime consensus
+- ❌ No portal-specific trust assumptions or DB knowledge
+- ❌ No hidden field normalization (case-folding, whitespace stripping, type coercion)
+
+Those are deliberately out of Path (ii) scope and would require separate authorized deliverables.
+
 ## License
 
 Apache 2.0 - See [LICENSE](../../LICENSE)
