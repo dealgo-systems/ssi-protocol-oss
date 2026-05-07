@@ -50,9 +50,21 @@ export default function ExplorerPage() {
       <section className="bg-gradient-to-br from-ssi-navy to-blue-900 text-white py-16">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="max-w-4xl">
+            <p className="text-sm uppercase tracking-widest text-white/70 mb-3">
+              Runtime-independent forensic continuity observatory
+            </p>
             <h1 className="text-5xl font-bold mb-6 text-white">SSI Chain Explorer</h1>
             <p className="text-xl text-white leading-relaxed">
-              Read-only verification UI for RPX decision chains. Upload audit logs and verification reports to inspect integrity, tamper evidence, and compliance level.
+              Read-only inspection of RPX decision chains and ReceiptBundle
+              artifacts. Upload an audit log or a receipt bundle to inspect
+              integrity, replay per-row chain hashes, and surface tamper
+              evidence — all in the browser, without a server round-trip.
+            </p>
+            <p className="text-sm text-white/80 leading-relaxed mt-4 max-w-3xl">
+              The Explorer is observability, not governance. It surfaces what
+              the artifact records and reproducibly verifies it; it does not
+              enforce, mutate, or adjudicate. Visible uncertainty is forensic
+              transparency, not a failure indicator.
             </p>
           </div>
         </div>

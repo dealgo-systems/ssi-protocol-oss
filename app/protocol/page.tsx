@@ -371,6 +371,54 @@ export default function ProtocolPage() {
         </div>
       </section>
 
+      <section className="py-20 bg-gray-50">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="text-center mb-12">
+            <h2 className="text-4xl font-bold mb-4">Continuity Artifacts (v1.1.x)</h2>
+            <p className="text-xl text-gray-600 max-w-3xl mx-auto">
+              Per-decision continuity envelopes and the cross-runtime verification property
+            </p>
+          </div>
+          <div className="grid md:grid-cols-2 gap-8 mb-8">
+            <Card className="border-2 hover:border-ssi-teal transition-all">
+              <CardHeader>
+                <CardTitle className="text-xl">Receipt Bundle</CardTitle>
+                <CardDescription>The per-decision continuity artifact</CardDescription>
+              </CardHeader>
+              <CardContent>
+                <p className="text-gray-700 mb-4">
+                  Composes a decision row, its approvals and webhook deliveries,
+                  the attached outcome, and every operator action linked to it
+                  into a single deterministic JSON object verifiable byte-for-byte
+                  by any conformant runtime.
+                </p>
+                <Button asChild variant="outline" size="sm">
+                  <Link href="/protocol/receipt-bundle">View Receipt Bundle Reference</Link>
+                </Button>
+              </CardContent>
+            </Card>
+
+            <Card className="border-2 hover:border-ssi-teal transition-all">
+              <CardHeader>
+                <CardTitle className="text-xl">Cross-Runtime Verification</CardTitle>
+                <CardDescription>Independent runtimes, same artifact, same hashes</CardDescription>
+              </CardHeader>
+              <CardContent>
+                <p className="text-gray-700 mb-4">
+                  Independent runtime implementations of the same canonical-byte
+                  rule reproduce the same integrity conclusions about the same
+                  artifact. This is deterministic replay agreement, not truth
+                  certification.
+                </p>
+                <Button asChild variant="outline" size="sm">
+                  <Link href="/protocol/cross-runtime-verification">Read the Framing</Link>
+                </Button>
+              </CardContent>
+            </Card>
+          </div>
+        </div>
+      </section>
+
       <section className="py-20 bg-ssi-navy text-white">
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
           <h2 className="text-4xl font-bold mb-6 text-white">Build on the SSI Protocol</h2>

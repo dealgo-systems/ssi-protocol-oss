@@ -443,6 +443,27 @@ Content-Type: application/json
         </div>
       </section>
 
+      <section className="py-12 bg-gray-50 border-t">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <h2 className="text-2xl font-semibold mb-3">Related: continuity envelope and runtime portability</h2>
+          <p className="text-gray-700 max-w-3xl mb-4 leading-relaxed">
+            RPX defines the constitutional decision artifact. The{" "}
+            <Link href="/protocol/receipt-bundle" className="text-ssi-teal hover:underline">
+              Receipt Bundle
+            </Link>{" "}
+            composes an RPX-shaped decision plus its surrounding continuity
+            (approvals, webhook deliveries, outcomes, operator actions) into a
+            single deterministic JSON object.{" "}
+            <Link href="/protocol/cross-runtime-verification" className="text-ssi-teal hover:underline">
+              Cross-runtime verification
+            </Link>{" "}
+            is the property that independent runtimes reproduce the same
+            integrity conclusions about the same artifact — deterministic
+            replay agreement, not truth certification.
+          </p>
+        </div>
+      </section>
+
       <section className="py-20 bg-ssi-navy text-white">
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
           <h2 className="text-4xl font-bold mb-6 text-white">Start Building with RPX</h2>

@@ -61,6 +61,8 @@ Think of it as **Git for audit trails**, but with stronger cryptographic guarant
 2. **Hash Chains**: Each decision links to the previous one via SHA-256 hash (like blockchain, but faster and cheaper)
 3. **Ed25519 Signatures**: Every record is signed by the platform (future: signed by the tenant's own key)
 4. **Verification API**: Anyone can verify chain integrity without accessing the database
+5. **Cross-runtime verification**: Independent verifier implementations (TypeScript reference + Python sibling) reproduce the same integrity conclusions about the same receipt bytes — see [`docs/protocol/CROSS_RUNTIME_VERIFICATION.md`](protocol/CROSS_RUNTIME_VERIFICATION.md). This is *deterministic replay agreement*, not truth certification.
+6. **Forensic continuity observatory**: The reference Explorer surfaces tamper evidence, replay traceability, lineage, and continuity uncertainty — read-only, never mutating evidence.
 
 ### What This Means for You
 

@@ -70,6 +70,34 @@ This guide enables organizations to validate SSI Protocol conformance independen
 
 ---
 
+### 5. Receipt Schema Evolution Discipline (v2.1+)
+
+**MUST follow** the rules formalized in [`docs/protocol/RECEIPT_EVOLUTION.md`](protocol/RECEIPT_EVOLUTION.md):
+
+- ✅ Additive-only: new fields are optional; verifiers ignore unknowns
+- ✅ Canonical-byte preservation: alphabetical key ordering at every depth, no whitespace, UTF-8, exclude `record_hash` and `metadata`
+- ✅ Deprecation never deletion: deprecated fields remain hash-included
+- ✅ Verifier backward compatibility: latest verifier accepts all prior versions still in chain
+- ✅ Producer key rotation as a chained event: prior keys remain advertised so historical receipts stay verifiable
+- ✅ Intermediary preservation: portals, transport layers, and storage adapters MUST NOT mutate unknown fields, MUST NOT reorder arrays, MUST NOT collapse `null` to absent
+
+**Test:** Does your verifier accept a v2.1 record that includes an unknown forward-compatible top-level field, without rejecting the record and without silently stripping the field?
+
+---
+
+### 6. Cross-Runtime Verification Reproducibility
+
+**MUST hold:**
+- ✅ A receipt produced by a conformant emitter can be verified by an independent runtime that consumes only the receipt bytes (no network call to the producer required).
+- ✅ Independent verifier implementations reproduce **byte-identical** canonical-byte output and **byte-identical** SHA-256 chain-hash and bundle-hash values.
+- ✅ Verifier disagreement, when it occurs, is reported as disagreement — never silently resolved or smoothed over.
+
+**Distinction (load-bearing):** "cross-runtime verification" proves that independent runtimes reproduce the same *integrity conclusions* about the same artifact. It does **not** prove the underlying decision was correct, just, or compliant with any external standard. See [`docs/protocol/CROSS_RUNTIME_VERIFICATION.md`](protocol/CROSS_RUNTIME_VERIFICATION.md) for the full framing.
+
+**Test:** Run the TS reference verifier (`tools/ssi-verify`) and the Python sibling (`sdks/python/ssi_protocol/verify`) against the same set of golden vectors. Do they classify every vector identically (`VALID` / `INVALID` / `INCOMPLETE`) and recompute every hash byte-identically?
+
+---
+
 ## Conformance Levels
 
 ### **Level 1: Core Protocol**
