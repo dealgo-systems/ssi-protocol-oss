@@ -53,6 +53,18 @@ from .verifier import (
     VerificationReport,
     verify_record,
 )
+# Path (ii) — ReceiptBundle adapter.  Lets the Python sibling consume
+# the portal's ReceiptBundle JSON shape (as emitted by the portal's
+# /api/audit/receipt/<id> endpoint) and produce byte-identical
+# verification results to the existing TS reference verifier.
+from .bundle import (
+    BundleVerificationError,
+    canonical_bundle_bytes,
+    compute_bundle_hash,
+    compute_row_chain_hash,
+    deeply_sort_keys,
+    verify_receipt_bundle,
+)
 
 __all__ = [
     "GENESIS_HASH",
@@ -67,4 +79,11 @@ __all__ = [
     "RecordVerification",
     "TamperEvidence",
     "VerificationReport",
+    # Path (ii) — ReceiptBundle adapter.
+    "BundleVerificationError",
+    "canonical_bundle_bytes",
+    "compute_bundle_hash",
+    "compute_row_chain_hash",
+    "deeply_sort_keys",
+    "verify_receipt_bundle",
 ]
