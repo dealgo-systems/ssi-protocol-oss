@@ -58,6 +58,27 @@ const testVectors = [
     expected: join(EXPECTED_DIR, 'bad-timestamp.verification-report.json'),
     expectedStatus: 'INCOMPLETE',
     expectedExitCode: 2
+  },
+  // Phase X Gate 3 / v2.1 receipt-schema vectors.
+  // valid-chain-3-v2.1 mixes a v1 record (no receipt_version) with v2.1 records
+  // carrying receipt_version + signing_key_id + policy_snapshot_fingerprint —
+  // proves §14 rule 5 (latest verifier accepts records of older versions).
+  {
+    name: 'valid-chain-3-v2.1',
+    input: join(RPX_DIR, 'valid-chain-3-v2.1.jsonl'),
+    expected: join(EXPECTED_DIR, 'valid-chain-3-v2.1.verification-report.json'),
+    expectedStatus: 'VALID',
+    expectedExitCode: 0
+  },
+  // unknown-field-passthrough carries a forward-compatible top-level field
+  // the verifier does not recognize. Proves §14 rule 1 (verifiers MUST accept
+  // unknown fields and MUST hash-include them so record_hash is reproducible).
+  {
+    name: 'unknown-field-passthrough',
+    input: join(RPX_DIR, 'unknown-field-passthrough.jsonl'),
+    expected: join(EXPECTED_DIR, 'unknown-field-passthrough.verification-report.json'),
+    expectedStatus: 'VALID',
+    expectedExitCode: 0
   }
 ];
 

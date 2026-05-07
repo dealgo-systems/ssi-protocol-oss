@@ -24,11 +24,30 @@ export interface RPXRecord {
   action_type?: string;
   reason?: string;
   metadata?: any;
+  // v2.1 additive-only fields (see docs/protocol/RECEIPT_EVOLUTION.md).
+  // Absence is permitted; presence is hash-included. Verifiers MUST accept
+  // additional unknown top-level fields per §14 rule 1.
+  receipt_version?: string;
+  signing_key_id?: string;
+  policy_snapshot_fingerprint?: string;
+  payload_hash?: string;
+  signature?: string;
+  // Forward-compatible unknown fields (additive-only). Verifiers MUST NOT
+  // reject records carrying fields they do not recognize; such fields ARE
+  // hash-included so that a verifier seeing them can still reproduce the
+  // hash deterministically.
+  [unknown: string]: any;
 }
 
 /**
- * Compute canonical hash of an RPX record
- * 
+ * Compute canonical hash of an RPX record.
+ *
+ * Hash inclusion rule (locked at v1, valid for v2.1+):
+ *   - exclude `record_hash` (self-reference) and `metadata` (free-form)
+ *   - include EVERYTHING else, sorted lexicographically by key
+ *   - this includes v2.1+ optional fields AND any forward-compatible
+ *     unknown top-level fields a producer adds (additive-only)
+ *
  * @param record - RPX record object
  * @returns SHA-256 hash (lowercase hex, 64 characters)
  */
