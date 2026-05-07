@@ -21,14 +21,25 @@ SSI Protocol is a **constitutional standard** for AI decision-making that guaran
 2. **Failures are logged before prevention** (fail-closed by default)
 3. **Humans retain veto authority** (agents cannot override)
 4. **Audit trails are independently verifiable** (no trust required)
+5. **Receipts are runtime-portable** (the same artifact can be verified by independent runtimes; see [Cross-runtime verification](#cross-runtime-verification))
+6. **Forensic continuity is observable** (per-row replay, lineage, and tamper-evidence surfaces inspect the substrate without mutating it; see [the Explorer](#the-explorer))
 
 **SSI is NOT:**
 - An AI model or training framework
 - A blockchain or distributed ledger (though it can integrate)
 - A specific product or vendor solution
 - A replacement for domain-specific safety standards
+- A truth-certification system (verification proves *integrity* and *reproducibility*, not the correctness of the underlying decisions)
 
 SSI provides the **audit infrastructure** that allows AI agents to operate in regulated environments where accountability, traceability, and independent verification are mandatory.
+
+### Cross-runtime verification
+
+A `ReceiptBundle` emitted by a conformant producer can be independently verified by separate runtimes that consume the same bytes. The reference TypeScript verifier (`tools/ssi-verify`) and the reference Python verifier (`sdks/python/ssi_protocol/verify`) recompute every chain hash and the top-level bundle hash byte-identically. Independent runtimes reproducing the same integrity conclusions about the same artifact is what makes a receipt portable trust evidence — see [`docs/protocol/CROSS_RUNTIME_VERIFICATION.md`](docs/protocol/CROSS_RUNTIME_VERIFICATION.md).
+
+### The Explorer
+
+The reference site at [`/explorer`](app/explorer/page.tsx) is a **runtime-independent forensic continuity observatory**. It is read-only: it inspects receipts, replays per-row chain hashes, surfaces tamper evidence, and renders evidenced lineage — without mutating any record, without enforcing any decision, and without speculating about anything the artifact does not directly evidence. The Explorer is observability, not governance.
 
 ---
 
@@ -129,10 +140,13 @@ Constitutional guarantees cannot be weakened. Backward compatibility is mandator
 
 **Current Version:** v1.0.0-invariant  
 **Constitutional Docs:** Complete (SPEC, DECISIONS, AUDIT, FAILURE, COMPLIANCE)  
-**Artifact Schemas:** Complete (RPX records, chain proofs, verification reports, compliance assertions)  
+**Artifact Schemas:** Complete (RPX records v2.1, chain proofs, verification reports, compliance assertions)  
 **Reference Implementation:** Available (SSI Kernel, SSI Gateway)  
-**SDKs:** TypeScript (in development), Python/Rust (planned)  
-**Verification Tooling:** Planned (ssi-verify CLI, v1.1.0 - Q2 2026)
+**Verification Tooling:** TypeScript reference verifier shipped (`tools/ssi-verify`); Python sibling shipped (`sdks/python/ssi_protocol/verify`); cross-runtime byte-identity proven against real artifacts.  
+**Forensic Explorer:** Reference observatory shipped (`app/explorer`).  
+**Receipt evolution rules:** Locked at v2.1; see [`docs/protocol/RECEIPT_EVOLUTION.md`](docs/protocol/RECEIPT_EVOLUTION.md).
+
+See [`ROADMAP.md`](ROADMAP.md) for the full Shipped / Next / Future view.
 
 ---
 

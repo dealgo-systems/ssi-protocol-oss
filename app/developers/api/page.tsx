@@ -140,6 +140,50 @@ export default function APIPage() {
         </div>
       </section>
 
+      <section className="py-16 bg-gray-50 border-t">
+        <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
+          <h2 className="text-3xl font-bold mb-3">Python verifier API</h2>
+          <p className="text-gray-700 mb-6 max-w-3xl leading-relaxed">
+            The Python sibling at{" "}
+            <code className="font-mono text-sm">sdks/python/ssi_protocol/verify</code>{" "}
+            provides a pure-stdlib reference verifier for RPX records and
+            ReceiptBundles. Same canonical-byte rule as the TypeScript reference;
+            byte-identical hash output. See the{" "}
+            <a href="/protocol/cross-runtime-verification" className="text-ssi-teal hover:underline">
+              cross-runtime verification framing
+            </a>{" "}
+            for what this property does and does not establish.
+          </p>
+          <div className="bg-gray-900 text-gray-100 p-5 rounded font-mono text-xs overflow-x-auto">
+            <pre>{`from ssi_protocol.verify import (
+    verify_record,             # single RPX record
+    verify_chain,              # full RPX chain walk
+    verify_receipt_bundle,     # portal-emitted ReceiptBundle JSON
+    compute_record_hash,
+    compute_bundle_hash,
+    compute_row_chain_hash,
+)
+
+# Verify an RPX chain
+import json
+records = [json.loads(l) for l in open("chain.jsonl") if l.strip()]
+report = verify_chain(records)
+print(report.integrity_status)         # VALID / INVALID / INCOMPLETE
+print(len(report.tamper_evidence))     # finding count
+
+# Verify a ReceiptBundle (portal-emitted /api/audit/receipt/<id>)
+with open("receipt.json") as f:
+    bundle = json.load(f)
+print(verify_receipt_bundle(bundle).integrity_status)`}</pre>
+          </div>
+          <p className="text-sm text-gray-600 mt-4">
+            CLI distribution (<code className="font-mono">python -m ssi_protocol.verify --in</code>)
+            and PyPI release of the verifier subpackage are deferred to a
+            future release; today&apos;s distribution is via repository checkout.
+          </p>
+        </div>
+      </section>
+
       <section className="py-20 bg-white">
         <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
           <h2 className="text-4xl font-bold mb-6">Interactive API Explorer</h2>

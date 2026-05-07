@@ -110,6 +110,65 @@ These claims are **mathematically defensible**. You can say these in legal docs,
 
 ---
 
+### RPX Record Schema v2.1 (Phase X Gate 3a — PR #124)
+
+| **Claim** | **Evidence** | **Test File** |
+|---|---|---|
+| "RPX records evolve under additive-only rules: new optional fields never invalidate prior records" | `tests/vectors/generate-v2-1-vectors.mjs` + `valid-chain-3-v2.1.jsonl` | `tools/ssi-verify` test-vectors |
+| "Verifiers MUST accept unknown top-level fields and MUST hash-include them" | `unknown-field-passthrough.jsonl` golden vector | `tools/ssi-verify` test-vectors |
+| "Latest verifier verifies all prior receipt versions still in chain" | `valid-chain-3-v2.1.jsonl` mixes v1 + v2.1 records on the same chain | `tools/ssi-verify` test-vectors |
+
+**Forbidden Inverse**:
+- ❌ "Adding a new optional field invalidates older receipts" → **Disproven by `valid-chain-3-v2.1` mixed-version vector**
+
+---
+
+### Cross-Runtime Verifier Convergence (Phase X Gate 4 — PR #125)
+
+| **Claim** | **Evidence** | **Test File** |
+|---|---|---|
+| "Independent runtime verifiers reproduce the same integrity conclusions about the same artifact" | TS verifier (`tools/ssi-verify`) and Python sibling (`sdks/python/ssi_protocol/verify`) classify all 7 golden vectors identically | `sdks/python/tests/test_verifier_vectors.py` |
+| "Canonical-byte rule (RFC 8785-style) is implementation-portable across TypeScript and Python" | `compute_record_hash()` produces byte-identical SHA-256 hex for all 14 records across the 3 VALID vectors | `test_valid_vectors_recomputed_record_hash_equals_stored` |
+| "The Python sibling does not import any TypeScript output, dist artifacts, or Node tooling" | `sdks/python/ssi_protocol/verify/` has zero dependencies on the JS toolchain | source inspection (no Node imports) |
+
+**Forbidden Inverse**:
+- ❌ "Cross-runtime verifier convergence requires shared runtime infrastructure" → **Disproven by independent stdlib-only Python implementation**
+
+---
+
+### ReceiptBundle Adapter (Path ii — PR #126)
+
+| **Claim** | **Evidence** | **Test File** |
+|---|---|---|
+| "Python verifies the same `ReceiptBundle` JSON the TypeScript browser verifier validates, with byte-identical chain-hash and bundle-hash recomputation" | `verify_receipt_bundle()` in `sdks/python/ssi_protocol/verify/bundle.py` | `sdks/python/tests/test_receipt_bundle_adapter.py` |
+| "The adapter never re-canonicalizes per-row `canonical_bytes` (the producer is authoritative)" | `compute_row_chain_hash()` treats `canonical_bytes` as an opaque string | `TestCanonicalization.test_compute_bundle_hash_is_deterministic` |
+| "The adapter never mutates the input bundle" | JSON snapshot comparison before/after verification | `TestEdgeCases.test_input_is_never_mutated` |
+| "Real portal-emitted artifacts verify byte-identically against the Python adapter" | Real `/api/audit/receipt/<id>` export passes `compute_bundle_hash(real_bundle) == real_bundle["bundle_hash"]` | `sdks/python/tests/test_real_export.py` (env-driven; bundle data not committed per PUBLIC_PROTOCOL_CHECKLIST.md) |
+
+**Forbidden Inverse**:
+- ❌ "Receipt verification requires the portal that emitted the receipt" → **Disproven by stdlib-only Python adapter against real exports**
+
+---
+
+### Forensic Continuity Observatory (Explorer hardening — PRs #98, #100)
+
+The reference Explorer at `app/explorer/page.tsx` is a *read-only* observatory. The following claims describe what it does — and, critically, what it deliberately does not do.
+
+| **Claim** | **Evidence** |
+|---|---|
+| "The Explorer surfaces tamper evidence categorized by severity (VALID / INCOMPLETE / INVALID), with INVALID dominating INCOMPLETE" | `lib/tamper-forensics.ts` (in the reference operator portal repo); test `test-tamper-evidence.mts` |
+| "Per-row replay shows verbatim canonical bytes alongside the recomputed chain hash; the viewer never re-canonicalizes" | replay route `app/audit/replay/[decision_id]/`; test `test-replay-trace.mts` |
+| "Lineage visualization renders only edges that are explicitly evidenced by stored fields; speculative edges are surfaced as `omissions`, not rendered" | `lib/lineage-graph.ts` 5-rule evidence allowlist; test `test-lineage-graph.mts` |
+| "The continuity index never reorders rows by hash linkage; uncertainty is shown, not repaired" | `lib/continuity-index.ts` four-category uncertainty taxonomy; test `test-continuity-index.mts` |
+| "Cross-runtime consensus is reported as `not_evaluated` whenever both runtimes have not actually run against the same artifact" | `lib/python-verifier-instruction.ts` `computeConsensus()`; test `test-verifier-comparison.mts` |
+| "Policy snapshot inspection refuses to speculate when the portal has not ingested a fingerprint" | `lib/policy-snapshot-store.ts` honest `not_ingested` state; test `test-policy-snapshot.mts` |
+
+**Forbidden Inverses**:
+- ❌ "Visible uncertainty in the Explorer means the substrate is broken" → **The Explorer surfaces uncertainty deliberately. Honest uncertainty is forensic transparency, not system failure.**
+- ❌ "The Explorer can repair, normalize, or auto-resolve broken lineage" → **Disproven by the source-level grep guard in `test-policy-snapshot.mts` that fails if forbidden symbols (`compareSnapshots`, `recommendSnapshot`, `editSnapshot`, etc.) ever appear in the policy-snapshot module.**
+
+---
+
 ## 🟡 PLANNED Claims (Specified, Not Yet Built)
 
 These claims are **roadmapped** but not yet proven. You can say "we're building this" but **not** "this works today".
@@ -167,6 +226,10 @@ These claims are **actively false**. Never say these, even if customers ask for 
 | "We're fully compliant with SOC 2/HIPAA/GDPR" | Compliance requires org-level controls | "We provide cryptographic building blocks for compliance" |
 | "We store audit trails on a blockchain" | We use hash chains, not distributed consensus | "We use hash chains (like Git) for cryptographic integrity" |
 | "Deleted records are unrecoverable" | Deletion leaves gaps, doesn't erase data | "Deletion attempts leave cryptographic evidence" |
+| "Cross-runtime verification proves the underlying decision was correct" | Verification is about *integrity* of the recorded artifact, not the *correctness* of the original judgment | "Independent runtimes reproduced the same integrity conclusions about the same artifact" |
+| "Cross-runtime verifier agreement = consensus on truth" | Two verifiers running the same canonical-byte rule will always agree about the bytes; that says nothing about whether the decision recorded in those bytes was good | "Cross-runtime verifier agreement is *deterministic replay agreement*, not truth certification" |
+| "The Explorer or its verifiers establish governance validity" | The Explorer inspects evidence; it does not adjudicate validity | "The Explorer surfaces what the evidence does and does not show; governance authority remains with the operator and the policy framework" |
+| "A verified receipt means the action was authorized" | Verification proves the receipt is internally consistent and was not tampered with after the fact; authorization is a separate property determined by the original decision pipeline | "A verified receipt means the chain of evidence is reproducible — the substantive authorization is documented within the receipt's signed bytes, not implied by verification" |
 
 ---
 
