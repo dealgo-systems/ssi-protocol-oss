@@ -89,6 +89,59 @@ See [`examples/`](examples/) directory for:
 
 Full documentation available at [ssi-protocol.org/developers](https://ssi-protocol.org/developers)
 
+## Independent verifier sibling (`ssi_protocol.verify`)
+
+Phase X Gate 4 introduced a **spec-derived** Python verifier in [`ssi_protocol/verify/`](ssi_protocol/verify/). It is not a port of the TypeScript verifier in [`tools/ssi-verify/`](../../tools/ssi-verify/) — both implementations consume the same public golden vectors and same public schema, and **both must produce identical truth judgments** for every vector.
+
+That cross-language consensus is the protocol's sovereignty proof: protocol truth survives implementation boundaries.
+
+### Public surface
+
+```python
+from ssi_protocol.verify import (
+    canonical_bytes,          # RFC-8785-style canonical JSON bytes
+    compute_record_hash,      # SHA-256 hex of canonical bytes
+    verify_record,            # single-record schema + hash check
+    verify_chain,             # full-chain walk
+    IntegrityStatus,          # VALID / INVALID / INCOMPLETE
+    TamperEvidence,           # one unit of tamper signal
+    VerificationReport,       # full chain report
+    GENESIS_HASH,             # SHA-256("") — first-record previous_hash
+)
+```
+
+### Acceptance matrix
+
+The verifier is tested against the **same** seven golden vectors the TypeScript verifier consumes (`tests/vectors/rpx/*.jsonl`). Both verifiers must agree on every classification:
+
+| Vector | Expected |
+|---|---|
+| `valid-chain-10` | VALID |
+| `valid-chain-3-v2.1` | VALID |
+| `unknown-field-passthrough` | VALID |
+| `tampered-record` | INVALID |
+| `missing-link` | INCOMPLETE |
+| `reordered` | INCOMPLETE |
+| `bad-timestamp` | INCOMPLETE |
+
+Plus byte-identity: every record's stored `record_hash` (computed by the OSS TypeScript pipeline using the `canonicalize` npm package) MUST equal the Python recomputed hash. This is asserted for every record in every VALID vector — proving canonicalization is byte-identical across implementations.
+
+Run the acceptance suite:
+
+```bash
+cd sdks/python
+python -m pytest tests/test_verifier_vectors.py -v
+```
+
+### What the verifier does NOT do
+
+- Does not import any TypeScript output, dist artifacts, or Node tooling.
+- Does not re-canonicalize per-record canonical bytes (records are validated by recomputing the hash from the record's own current fields).
+- Does not mutate any vector or expected-report file.
+- Does not couple to the SDK client surface (`SSIClient`, `ssi_governed`); the verifier subpackage is independent.
+
+Spec authority: [`schemas/rpx-record.schema.json`](../../schemas/rpx-record.schema.json) + [`docs/protocol/RECEIPT_EVOLUTION.md`](../../docs/protocol/RECEIPT_EVOLUTION.md).
+
 ## License
 
 Apache 2.0 - See [LICENSE](../../LICENSE)
