@@ -1,5 +1,5 @@
 # Multi-stage build for SSI Kernel
-FROM node:18-alpine AS builder
+FROM node:26-alpine AS builder
 
 WORKDIR /app
 
@@ -16,7 +16,7 @@ COPY reference/kernel/ ./
 RUN npm run build
 
 # Production image
-FROM node:18-alpine
+FROM node:26-alpine
 
 WORKDIR /app
 
